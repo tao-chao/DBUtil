@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="UserMapper">
+  <select id="userAdd"    
+    resultType="com.znsd.mybatis.bean.UserBean">
+   <!--  insert into t_user(id,userName,password) value(#{id},#{userName},#{password})  -->
+   select * from t_user
+   
+  </select >
+  
+<!--   用来定义可重用的 SQL 代码段 -->
+  <sql id="userColumns">${alias}.id,${alias}.userName,${alias}.password </sql>
+  
+  <select id="selectUsers" resultType="map">
+  select
+    <include refid="userColumns"><property name="alias" value="t1"/></include>
+  from t_user t1
+</select>
+  
+  
+  
+  <insert id="insertUser" parameterType="list" >
+  		    insert into t_user (userName, password) values
+		  <foreach item="item" collection="list" index="index" separator=",">
+		    (#{item.userName}, #{item.password})
+		  </foreach>
+  </insert>
+  <!-- id自增长  useGeneratedKeys="true" keyProperty="id"-->
+ <!--  <insert id="insertUser" useGeneratedKeys="true" keyProperty="id">
+  	insert into t_user(userName,password) value(#{userName},#{password})
+  </insert> -->
+  
+  
+  <update id="userUpdate" parameterType="com.znsd.mybatis.bean.UserBean">
+  		update t_user set userName=#{userName},password=#{password} where id = #{id}
+  </update>
+  
+  
+  <delete id="userDelete" parameterType="list">
+  	<!-- delete from t_user where id=#{id} -->
+  	delete from t_user where id in
+  	 <foreach item="empnoItem" collection="list"  open="("  separator="," close=")" >
+            #{empnoItem}
+    </foreach>
+  </delete>
+  
+    <resultMap id="userResultMap" type="User">
+	  <id property="id" column="user_id" />
+	  <result property="userName" column="user_name"/>
+	  <result property="password" column="user_password"/>
+	</resultMap>
+  
+  <select id="findUser" resultMap="userResultMap">
+   <!--  insert into t_user(id,userName,password) value(#{id},#{userName},#{password})  -->
+   select user_id,user_name,user_password from t_user_copy
+   
+  </select >
+  
+</mapper>

@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.znsd.mybatis.bean.IBlogMapper">
+	<resultMap id="BlogResultMap" type="Blog">
+	
+	<id property="blogId" column="blog_id"/>
+	<result property="blogName" column="blog_name"/>
+	<result property="blogTitle" column="blog_title"/>
+	<!-- 关联的嵌套结果 -->
+	  <association property="author" javaType="Author">
+	    <id property="authorId" column="author_id"/>
+	    <result property="authorName" column="author_name"/>
+	    <result property="gender" column="author_gender"/>
+	  </association>
+	<!--   集合嵌套结果 -->
+	  <collection property="postList" ofType="Post">
+	    <id property="postId" column="post_id"/>
+	    <result property="postTitle" column="post_title"/>
+	    <result property="postBody" column="post_body"/>
+	  </collection>
+	  
+	</resultMap>
+	
+	
+		<resultMap id="blogResult" type="Blog">
+		<id property="blogId" column="blog_id"/>
+		<result property="blogName" column="blog_name"/>
+		<result property="blogTitle" column="blog_title"/>
+		<!-- 关联的嵌套查询 -->
+		  <association property="author" column="author_id" javaType="Author" select="selectAuthor"/>
+		  <!-- 集合的嵌套查询 -->
+		  <collection property="postList" javaType="List" column="blog_id" ofType="Post" select="selectPostsForBlog"/>
+		  
+		</resultMap>
+		<resultMap type="Author" id="authorId">
+				<id property="authorId" column="author_id"/>
+			    <result property="authorName" column="author_name"/>
+			    <result property="gender" column="author_gender"/>
+		</resultMap>
+		
+		<select id="selectPostsForBlog" resultType="Post">
+  			SELECT post_id postId,post_title postTitle, post_body postBody FROM t_POST WHERE BLOG_ID = #{blog_id}
+		</select>
+		
+		
+		<select id="selectAuthor" resultMap="authorId">
+		  SELECT * FROM T_AUTHOR where author_id = #{author_id}
+		</select>
+		
+		<select id="selectBlog" resultMap="blogResult">
+		  SELECT * FROM T_BLOG 
+		</select>
+		
+		<update id="updateBlog" parameterType="Blog">
+		<!-- set标签 -->
+		  update t_blog
+		    <set>
+		      <if test="blogName != null">blog_name=#{blogName},</if>
+		      <if test="blogTitle != null">blog_title=#{blogTitle}</if>
+		    </set>
+		  where blog_id=#{blogId}
+		</update>
+		
+		<resultMap id="blogResults" type="Blog">
+			<id property="blogId" column="blog_id"/>
+			<result property="blogName" column="blog_name"/>
+			<result property="blogTitle" column="blog_title"/>
+		</resultMap>
+		
+		<select id="findBlogs" parameterType="Blog"  resultType="Blog" resultMap="blogResults">
+		<!-- if标签 -->
+		  SELECT * FROM t_BLOG WHERE  blog_name= '赵六' 
+		  <if test="blogTitle != null ">
+		    AND blog_title like #{blogTitle}
+		  </if>
+		 <!--  choose, when, otherwise 标签 -->
+		  <!--  SELECT * FROM t_BLOG WHERE  blog_name= '赵六'
+		   <choose>
+		    <when test="blogTitle != null">
+		      AND blog_title like #{blogTitle}
+		    </when>
+		    <when test="blogName != null">
+		      AND blog_name like #{blogName}
+		    </when>
+		    <otherwise>
+		      AND blog_id = 2
+		    </otherwise>
+		  </choose> -->
+		</select>
+	
+	
+	<select id="findBlog" parameterType="Blog" resultMap="BlogResultMap">
+	<!-- where标签 -->
+   		<!-- select * from t_blog b, t_author a , t_post p where b.author_id = a.author_id and b.blog_id = p.blog_id  -->
+  		select * from t_blog 
+  		 <where> 
+		    <if test="blogName != null">
+		          blog_name = #{blogName}
+		    </if> 
+		    <!-- <if test="blogTitle != null">
+		        AND b.blog_id = p.blog_id
+		    </if> -->
+		  </where>
+  	</select >
+  	
+  	
+  
+  
+  
+  
+  
+  
+  
+  
+</mapper>
